@@ -1,0 +1,87 @@
+---
+title: "ActivityPrediction"
+author: "Mark Ferris"
+date: "April 12, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+The goal of this assignment is to use machine learning to predict if a subject performed a weight lifting exercise correctly. The data comes from various sensors placed on the subject and dumbell. The subject either performs the lift correctly (classe A) or incorrectly (error classes B, C, D, and E).
+
+All data comes from the Human Activity Recognition (HAR) group of the Rio de Janeiro PUC university - http://groupware.les.inf.puc-rio.br/har
+
+## Getting Data
+
+#load required packages
+```{r}
+library(caret)
+```
+# Download data
+First the data is downloaded and cleaned up. It was observed that columns containing NAs had too many NA values in them to impute, so they were discared from the training and testing sets.
+```{r}
+trainingUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testingUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(trainingUrl, destfile = "./data/training.csv")
+download.file(testingUrl, destfile = "./data/testing.csv")
+
+# Read data
+training <- read.csv("./data/training.csv", na.strings = c("NA", "#DIV/0!"))
+testing <- read.csv("./data/testing.csv", na.strings = c("NA", "#DIV/0!"))
+
+#first remove first seven columns as they are indicators not predictors
+
+training <- training[,-c(1:7)]
+testing <- testing[,-c(1:7)]
+
+#store training columns with NA values
+naCols <- which(colSums(is.na(training)) > 0, arr.ind=TRUE, useNames=FALSE)
+
+#remove from training
+training <- training[,-c(naCols)]
+
+#remove from testing
+testing <- testing[,-c(naCols)]
+```
+Then the training set was checked for near zero variables, which there were none of
+```{r}
+# check for near zero variables (all contribute)
+nearZeroVar(training, saveMetrics = TRUE)
+```
+
+## Cross Validation
+The training set was then split into new training and testing data to determine which model was appropriate to use.
+
+```{r}
+## Split training into new train and test
+inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)
+subTraining <- training[inTrain,]
+subTesting <- training[-inTrain,]
+```
+Boosting took a significant amount of time so it was abandoned. The random forest method was selected to attempt next. To improve model performance (decrease runtime to train) preprocessing with PCA was performed.
+```{r eval=FALSE, include=FALSE}
+## Training The Model
+#gradient boosting with gbm took too long to train, went with rf with PCA preprocessing
+modFit <- train(classe ~ .,data=subTraining, method="rf", preProcess="pca", prox=TRUE)
+```
+
+The model was used to predict on the testing subgroup of the training data set
+```{r}
+pred <- predict(modFit, subTesting);
+```
+Which was then evaluated using Caret's confusionMatrix function
+```{r}
+confusionMatrix(pred, subTesting$classe)
+```
+This was highly accurate, with a 0.9724 kappa value.
+
+## Predicting on Real Test
+```{r}
+testPred <- predict(modFit, testing)
+print(testPred)
+```
+
+These values were submitted to the validation quiz and were 100% correct.
