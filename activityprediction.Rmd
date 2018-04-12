@@ -76,7 +76,7 @@ Which was then evaluated using Caret's confusionMatrix function
 ```{r}
 confusionMatrix(pred, subTesting$classe)
 ```
-This was highly accurate, with a 0.9724 kappa value.
+This was highly accurate, with a 0.9724 kappa value. We would estimate the Out Of Sample error rate to be similar to that outline in the confusion matrix as we subsetted our training into a testing subset to try and estimate it this way.
 
 ## Predicting on Real Test
 ```{r}
