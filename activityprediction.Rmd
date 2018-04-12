@@ -15,10 +15,10 @@ The goal of this assignment is to use machine learning to predict if a subject p
 All data comes from the Human Activity Recognition (HAR) group of the Rio de Janeiro PUC university - http://groupware.les.inf.puc-rio.br/har
 
 ## Getting Data
-
-#load required packages
 ```{r}
+#load required packages
 library(caret)
+load("C:/Users/mferris/OneDrive/Documents/Coursera/Data Science/Practical Machine Learning/Prediction Assignment Writeup/trainedmodel.RData")
 ```
 # Download data
 First the data is downloaded and cleaned up. It was observed that columns containing NAs had too many NA values in them to impute, so they were discared from the training and testing sets.
